@@ -1,0 +1,2 @@
+paymentId,chargeBearer,requestedExecutionOn,debtorAccountNo,creditorAccountNo,endToEndId,currency,amount,remittanceInfo
+b07de4fd-6323-47d8-ada2-9a9987e98c58,OUR,2020-12-12,12345678901,09876543210,b07de4fd-ada2-47d8-6323-9a9987e98c58,INR,2345.34,some remit info
