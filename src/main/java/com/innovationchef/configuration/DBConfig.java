@@ -41,7 +41,8 @@ public class DBConfig implements ApplicationListener<ContextClosedEvent> {
     @Autowired
     private LocalSessionFactoryBean sessionFactoryBean;
 
-    private HikariDataSource createDataSource() {
+    @Bean
+    public HikariDataSource createDataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setPassword(password);

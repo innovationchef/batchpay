@@ -2,7 +2,6 @@ package com.innovationchef.job.step1;
 
 import com.innovationchef.constant.BatchConstant;
 import com.innovationchef.entity.Pain001CSV;
-import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
@@ -24,6 +23,7 @@ public class Step1Reader extends FlatFileItemReader<Pain001CSV> {
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
         JobParameters parameters = stepExecution.getJobParameters();
+        System.out.println(parameters);
         String filePath = parameters.getString(BatchConstant.INPUT_FILE);
         this.setResource(new FileSystemResource(filePath));
     }
