@@ -23,7 +23,6 @@ public class Step1Reader extends FlatFileItemReader<Pain001CSV> {
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
         JobParameters parameters = stepExecution.getJobParameters();
-        System.out.println(parameters);
         String filePath = parameters.getString(BatchConstant.INPUT_FILE);
         this.setResource(new FileSystemResource(filePath));
     }
