@@ -2,11 +2,12 @@ package com.innovationchef.entity;
 
 import com.innovationchef.constant.ChargeBearer;
 import com.innovationchef.constant.DBConstant;
+import com.innovationchef.constant.PaymentStatus;
 import com.innovationchef.support.ChargeBearerConverter;
+import com.innovationchef.support.PaymentStatusConverter;
 import com.innovationchef.support.UUIDConverter;
 import lombok.AccessLevel;
 import lombok.Setter;
-import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
@@ -16,7 +17,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Immutable
 @Table(name = DBConstant.PAIN_001_LANDING_TBL)
 public class Pain001CSV extends BaseEntity implements Serializable {
 
@@ -55,6 +55,14 @@ public class Pain001CSV extends BaseEntity implements Serializable {
 
     @Column(name = "AMOUNT", length = 2, updatable = false)
     private BigDecimal amount;
+
+    @Convert(converter = PaymentStatusConverter.class)
+    @Column(name = "STATUS")
+    private PaymentStatus status;
+
+    public void setStatus(PaymentStatus status) {
+        this.status = status;
+    }
 
     public static Builder builder() {
         return new Builder();

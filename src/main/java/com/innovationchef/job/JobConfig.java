@@ -6,6 +6,7 @@ import com.innovationchef.entity.Pain001CSV;
 import com.innovationchef.job.step1.Step1Processor;
 import com.innovationchef.job.step1.Step1Reader;
 import com.innovationchef.job.step1.Step1Writer;
+import com.innovationchef.service.PaymentApiCall;
 import org.hibernate.SessionFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -26,9 +27,13 @@ public class JobConfig {
     private StepBuilder stepBuilder;
     private SessionFactory sessionFactory;
 
-    public JobConfig(JobRepository jobRepository,
+    private PaymentApiCall paymentApiCall;
+
+    public JobConfig(PaymentApiCall paymentApiCall,
+                     JobRepository jobRepository,
                      SessionFactory sessionFactory,
                      @Qualifier("hbrTxnMgr") PlatformTransactionManager txnMgr) {
+        this.paymentApiCall = paymentApiCall;
         this.sessionFactory = sessionFactory;
         this.jobBuilder = new JobBuilder(BatchConstant.JOB_NAME).repository(jobRepository);
         this.stepBuilder = new StepBuilder(BatchConstant.STEP_NAME).repository(jobRepository).transactionManager(txnMgr);
@@ -44,7 +49,7 @@ public class JobConfig {
     private Step processPayment() {
         return this.stepBuilder.<Pain001CSV, Pain001CSV>chunk(10)
                 .reader(new Step1Reader())
-                .processor(new Step1Processor())
+                .processor(new Step1Processor(this.paymentApiCall))
                 .writer(new Step1Writer(this.sessionFactory))
                 .build();
     }
