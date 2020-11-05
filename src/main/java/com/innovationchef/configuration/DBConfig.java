@@ -4,12 +4,14 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Properties;
 
+@Log4j2
 @Getter
 @Setter
 @Configuration
@@ -61,6 +64,8 @@ public class DBConfig implements ApplicationListener<ContextClosedEvent> {
         Properties properties = new Properties();
         properties.setProperty("hibernate.dialect", dialect);
         properties.setProperty("hibernate.hbm2ddl.auto", hbm2ddl);
+        if (log.isDebugEnabled())
+            properties.setProperty("hibernate.show_sql", "true");
         LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
         sessionFactoryBean.setDataSource(ds);
         sessionFactoryBean.setPackagesToScan(ENTITY_PACKAGE);
@@ -68,7 +73,9 @@ public class DBConfig implements ApplicationListener<ContextClosedEvent> {
         return sessionFactoryBean;
     }
 
-    @Bean("hbrTxnMgr")
+
+    @Bean
+    @Primary
     public PlatformTransactionManager createTransactionManagerBean(LocalSessionFactoryBean factory) {
         HibernateTransactionManager transactionManager = new HibernateTransactionManager();
         transactionManager.setSessionFactory(factory.getObject());

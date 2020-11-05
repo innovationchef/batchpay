@@ -11,10 +11,13 @@ import com.innovationchef.service.PaymentApiCall;
 import org.hibernate.SessionFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.DuplicateJobException;
+import org.springframework.batch.core.configuration.JobFactory;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -26,33 +29,53 @@ public class JobConfig {
 
     private JobBuilder jobBuilder;
     private StepBuilder stepBuilder;
+    private JobRegistry jobRegistry;
     private SessionFactory sessionFactory;
 
     private PaymentApiCall paymentApiCall;
 
     public JobConfig(PaymentApiCall paymentApiCall,
+                     JobRegistry jobRegistry,
                      JobRepository jobRepository,
                      SessionFactory sessionFactory,
-                     @Qualifier("hbrTxnMgr") PlatformTransactionManager txnMgr) {
+                     PlatformTransactionManager txnMgr) {
         this.paymentApiCall = paymentApiCall;
         this.sessionFactory = sessionFactory;
+        this.jobRegistry = jobRegistry;
         this.jobBuilder = new JobBuilder(BatchConstant.JOB_NAME).repository(jobRepository);
         this.stepBuilder = new StepBuilder(BatchConstant.STEP_NAME).repository(jobRepository).transactionManager(txnMgr);
     }
 
     @Bean
-    public Job jobBuilder() {
-        return this.jobBuilder
-                .start(processPayment())
+    public Job jobBuilder() throws DuplicateJobException {
+        Job job = this.jobBuilder
+                .incrementer(new RunIdIncrementer())
+                .start(processPaymentStep())
                 .build();
+        this.registerJob(job);
+        return job;
     }
 
-    private Step processPayment() {
+    private Step processPaymentStep() {
         return this.stepBuilder.<Pain001CSV, Pain001CSV>chunk(10)
                 .reader(new Step1Reader())
                 .processor(new Step1Processor(this.paymentApiCall))
                 .writer(new Step1Writer(this.sessionFactory))
                 .listener(new ItemCountListener())
                 .build();
+    }
+
+    private void registerJob(Job job) throws DuplicateJobException {
+        this.jobRegistry.register(new JobFactory() {
+            @Override
+            public Job createJob() {
+                return job;
+            }
+
+            @Override
+            public String getJobName() {
+                return job.getName();
+            }
+        });
     }
 }
