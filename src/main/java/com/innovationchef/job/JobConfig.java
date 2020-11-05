@@ -3,6 +3,7 @@ package com.innovationchef.job;
 import com.innovationchef.configuration.SpringBatchConfig;
 import com.innovationchef.constant.BatchConstant;
 import com.innovationchef.entity.Pain001CSV;
+import com.innovationchef.job.step1.ItemCountListener;
 import com.innovationchef.job.step1.Step1Processor;
 import com.innovationchef.job.step1.Step1Reader;
 import com.innovationchef.job.step1.Step1Writer;
@@ -51,6 +52,7 @@ public class JobConfig {
                 .reader(new Step1Reader())
                 .processor(new Step1Processor(this.paymentApiCall))
                 .writer(new Step1Writer(this.sessionFactory))
+                .listener(new ItemCountListener())
                 .build();
     }
 }

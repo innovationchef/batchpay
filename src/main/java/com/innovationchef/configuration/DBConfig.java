@@ -77,6 +77,6 @@ public class DBConfig implements ApplicationListener<ContextClosedEvent> {
 
     @Override
     public void onApplicationEvent(ContextClosedEvent contextClosedEvent) {
-        this.sessionFactoryBean.destroy();
+        // this.sessionFactoryBean.destroy();
     }
 }
