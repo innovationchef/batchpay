@@ -14,14 +14,14 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class PaymentApiCall {
 
-    private static final int MIN = 2;
-    private static final int MAX = 15;
+    private static final int MIN = 1;
+    private static final int MAX = 50;
 
     @Retryable(value = ApiException.class)
-    public PaymentStatus  pay() {
+    public PaymentStatus pay() {
         Random r = new Random();
         try {
-            TimeUnit.SECONDS.sleep(r.nextInt(MAX - MIN + 1) + MIN);
+            TimeUnit.MILLISECONDS.sleep(r.nextInt(MAX - MIN + 1) + MIN);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }

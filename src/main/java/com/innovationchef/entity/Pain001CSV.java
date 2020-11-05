@@ -40,10 +40,10 @@ public class Pain001CSV extends BaseEntity implements Serializable {
     @Column(name = "RQST_EXEC_DT", updatable = false)
     private LocalDate requestedExecutionOn;
 
-    @Column(name = "DBTR_ACC_NO", length = 13, updatable = false)
+    @Column(name = "DBTR_ACC_NO", length = 14, updatable = false)
     private String debtorAccountNo;
 
-    @Column(name = "CDTR_ACC_NO", length = 13, updatable = false)
+    @Column(name = "CDTR_ACC_NO", length = 14, updatable = false)
     private String creditorAccountNo;
 
     @Convert(converter = UUIDConverter.class)
@@ -62,6 +62,10 @@ public class Pain001CSV extends BaseEntity implements Serializable {
 
     public void setStatus(PaymentStatus status) {
         this.status = status;
+    }
+
+    public UUID getPaymentId() {
+        return paymentId;
     }
 
     public static Builder builder() {
