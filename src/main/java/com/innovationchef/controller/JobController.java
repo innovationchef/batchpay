@@ -53,15 +53,14 @@ public class JobController {
                 .addString(BatchConstant.INPUT_FILE, filepath)
                 .toJobParameters();
 
-        ExecutorService es = Executors.newSingleThreadExecutor();
         JobExecution lastExecution = this.jobRepository.getLastJobExecution(job.getName(), parameters);
         if (lastExecution != null) {
             if (lastExecution.getExitStatus().getExitCode().equals("STOPPED"))
-                es.submit(() -> this.jobOperator.restart(lastExecution.getId()));
+                this.jobOperator.restart(lastExecution.getId());
         } else {
-            this.jobsMap.put(this.job.getName(), parameters);
-            es.submit(() -> this.jobLauncher.run(job, parameters));
+            this.jobLauncher.run(job, parameters);
         }
+        this.jobsMap.put(this.job.getName(), parameters);
 
         HashMap<String, String> response = new HashMap<>();
         response.put("status", "started");

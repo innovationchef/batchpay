@@ -39,7 +39,7 @@ public class JobManager implements ApplicationListener<ContextClosedEvent> {
             log.warn("Job {} is in context. Trying to close...", jobName);
             if (!jobsMap.containsKey(jobName)) continue;
             JobExecution lastExecution = this.jobRepository.getLastJobExecution(jobName, jobsMap.get(jobName));
-            if (lastExecution == null) continue;
+            if (lastExecution == null || lastExecution.getExitStatus().getExitCode().equals("COMPLETED")) continue;
             log.warn("Stopping job with Id : {}. Return value {}", lastExecution.getId(), this.jobOperator.stop(lastExecution.getId()));
             while (!this.jobRepository.getLastJobExecution(jobName, jobsMap.get(jobName)).getExitStatus().getExitCode().equals("STOPPED")) {
                 log.warn(this.jobRepository.getLastJobExecution(jobName, jobsMap.get(jobName)).getExitStatus());
