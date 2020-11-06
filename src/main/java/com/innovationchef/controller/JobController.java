@@ -6,6 +6,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.repository.JobRepository;
@@ -19,9 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Log4j2
 @RestController
@@ -32,6 +32,9 @@ public class JobController {
 
     @Autowired
     private Job job;
+
+    @Autowired
+    private JobExplorer jobExplorer;
 
     @Autowired
     private JobLauncher jobLauncher;
@@ -46,25 +49,37 @@ public class JobController {
     private ConcurrentHashMap<String, JobParameters> jobsMap;
 
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @GetMapping("v1/api/start/{jobId}")
-    public Map<String, String> start(@PathVariable("jobId") String jobId) throws Exception {
-        JobParameters parameters = new JobParametersBuilder()
-                .addString(BatchConstant.JOB_ID, jobId)
-                .addString(BatchConstant.INPUT_FILE, filepath)
+    @GetMapping("v1/api/start/{jobId}/{fileId}")
+    public Map<String, String> start(@PathVariable("jobId") String jobId,
+                                     @PathVariable("fileId") String fileId) throws Exception {
+        String completeFilePath = this.filepath + "payment-file-" + fileId + ".csv";
+        final JobParameters parameters = new JobParametersBuilder()
+                .addString(BatchConstant.JOB_ID, jobId, true)
+                .addString(BatchConstant.INPUT_FILE, completeFilePath)
                 .toJobParameters();
 
-        JobExecution lastExecution = this.jobRepository.getLastJobExecution(job.getName(), parameters);
-        if (lastExecution != null) {
-            if (lastExecution.getExitStatus().getExitCode().equals("STOPPED"))
-                this.jobOperator.restart(lastExecution.getId());
-        } else {
-            this.jobLauncher.run(job, parameters);
-        }
-        this.jobsMap.put(this.job.getName(), parameters);
-
         HashMap<String, String> response = new HashMap<>();
-        response.put("status", "started");
         response.put("jobId", jobId);
+        response.put("fileId", completeFilePath);
+
+        Set<JobExecution> executions = this.jobExplorer.findRunningJobExecutions(this.job.getName());
+        if (executions.size() > 0) {
+            response.put("status", "already-running");
+            return response;
+        }
+
+        this.jobsMap.put(this.job.getName(), parameters);
+        JobExecution lastExecution = this.jobRepository.getLastJobExecution(this.job.getName(), parameters);
+        if (lastExecution != null) {
+            if (lastExecution.getExitStatus().getExitCode().equals("STOPPED")) {
+                this.jobOperator.restart(lastExecution.getId());
+                response.put("status", "restarted");
+            }
+        } else {
+            this.jobLauncher.run(this.job, parameters);
+            response.put("status", "started");
+        }
+
         return response;
     }
 }
