@@ -1,5 +1,6 @@
 package com.innovationchef.job;
 
+import com.innovationchef.configuration.BatchJobRegistrar;
 import com.innovationchef.configuration.SpringBatchConfig;
 import com.innovationchef.constant.BatchConstant;
 import com.innovationchef.entity.Pain001CSV;
@@ -12,8 +13,6 @@ import org.hibernate.SessionFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.DuplicateJobException;
-import org.springframework.batch.core.configuration.JobFactory;
-import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
@@ -29,19 +28,19 @@ public class JobConfig {
 
     private JobBuilder jobBuilder;
     private StepBuilder stepBuilder;
-    private JobRegistry jobRegistry;
     private SessionFactory sessionFactory;
+    private BatchJobRegistrar jobRegistrar;
 
     private PaymentApiCall paymentApiCall;
 
     public JobConfig(PaymentApiCall paymentApiCall,
-                     JobRegistry jobRegistry,
+                     BatchJobRegistrar jobRegistrar,
                      JobRepository jobRepository,
                      SessionFactory sessionFactory,
                      PlatformTransactionManager txnMgr) {
         this.paymentApiCall = paymentApiCall;
         this.sessionFactory = sessionFactory;
-        this.jobRegistry = jobRegistry;
+        this.jobRegistrar = jobRegistrar;
         this.jobBuilder = new JobBuilder(BatchConstant.JOB_NAME).repository(jobRepository);
         this.stepBuilder = new StepBuilder(BatchConstant.STEP_NAME).repository(jobRepository).transactionManager(txnMgr);
     }
@@ -52,7 +51,7 @@ public class JobConfig {
                 .incrementer(new RunIdIncrementer())
                 .start(processPaymentStep())
                 .build();
-        this.registerJob(job);
+        this.jobRegistrar.registerJob(job);
         return job;
     }
 
@@ -63,19 +62,5 @@ public class JobConfig {
                 .writer(new Step1Writer(this.sessionFactory))
                 .listener(new ItemCountListener())
                 .build();
-    }
-
-    private void registerJob(Job job) throws DuplicateJobException {
-        this.jobRegistry.register(new JobFactory() {
-            @Override
-            public Job createJob() {
-                return job;
-            }
-
-            @Override
-            public String getJobName() {
-                return job.getName();
-            }
-        });
     }
 }
