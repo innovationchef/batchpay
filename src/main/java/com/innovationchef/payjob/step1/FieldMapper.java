@@ -1,4 +1,4 @@
-package com.innovationchef.job.step1;
+package com.innovationchef.payjob.step1;
 
 import com.innovationchef.entity.Pain001CSV;
 import org.springframework.batch.item.file.mapping.FieldSetMapper;

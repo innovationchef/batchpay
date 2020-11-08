@@ -1,4 +1,4 @@
-package com.innovationchef.job.step1;
+package com.innovationchef.batchcommons;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.batch.core.ChunkListener;

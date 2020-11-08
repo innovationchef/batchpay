@@ -7,16 +7,13 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Properties;
 
@@ -24,9 +21,8 @@ import java.util.Properties;
 @Getter
 @Setter
 @Configuration
-@EnableTransactionManagement
 @ConfigurationProperties("batchpay.db")
-public class DBConfig implements ApplicationListener<ContextClosedEvent> {
+public class DBConfig {
 
     public static final String ENTITY_PACKAGE = "com.innovationchef.entity";
 
@@ -80,10 +76,5 @@ public class DBConfig implements ApplicationListener<ContextClosedEvent> {
         HibernateTransactionManager transactionManager = new HibernateTransactionManager();
         transactionManager.setSessionFactory(factory.getObject());
         return transactionManager;
-    }
-
-    @Override
-    public void onApplicationEvent(ContextClosedEvent contextClosedEvent) {
-        // this.sessionFactoryBean.destroy();
     }
 }
