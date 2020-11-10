@@ -59,6 +59,17 @@ public class SpringBatchConfig implements BatchConfigurer {
         return new ConcurrentHashMap<>();
     }
 
+    @Bean
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("processor-");
+        executor.setMaxPoolSize(12);
+        executor.setCorePoolSize(8);
+        executor.setQueueCapacity(15);
+        executor.initialize();
+        return executor;
+    }
+
     protected JobLauncher asyncJobLauncher() throws Exception {
         SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
         jobLauncher.setJobRepository(this.jobRepository);
@@ -87,6 +98,7 @@ public class SpringBatchConfig implements BatchConfigurer {
 
     private TaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("jobLauncher-");
         executor.setMaxPoolSize(12);
         executor.setCorePoolSize(8);
         executor.setQueueCapacity(15);
