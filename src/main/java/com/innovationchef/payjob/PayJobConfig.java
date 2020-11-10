@@ -69,6 +69,7 @@ public class PayJobConfig {
                 .listener(new ItemCountListener())
                 .taskExecutor(this.taskExecutor)
                 .throttleLimit(10)
+                .allowStartIfComplete(false)
                 .build();
     }
 }

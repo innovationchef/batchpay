@@ -82,6 +82,7 @@ public class SpringBatchConfig implements BatchConfigurer {
         JobRepositoryFactoryBean factoryBean = new JobRepositoryFactoryBean();
         factoryBean.setDataSource(dataSource);
         factoryBean.setTransactionManager(platformTransactionManager);
+        factoryBean.setTablePrefix("BATCHPAY_");
         factoryBean.afterPropertiesSet();
         return factoryBean.getObject();
     }
