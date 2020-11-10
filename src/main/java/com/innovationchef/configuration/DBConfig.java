@@ -41,6 +41,7 @@ public class DBConfig {
     private LocalSessionFactoryBean sessionFactoryBean;
 
     @Bean
+    @Primary
     public HikariDataSource createDataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
