@@ -1,5 +1,6 @@
 package com.innovationchef.payjob;
 
+import com.innovationchef.batchcommons.FilePathParamValidator;
 import com.innovationchef.batchcommons.ItemCountListener;
 import com.innovationchef.configuration.BatchJobRegistrar;
 import com.innovationchef.configuration.SpringBatchConfig;
@@ -50,6 +51,7 @@ public class PayJobConfig {
         Job job = this.jobBuilder
                 .incrementer(new RunIdIncrementer())
                 .start(processPaymentStep())
+                .validator(new FilePathParamValidator())
                 .build();
         this.jobRegistrar.registerJob(job);
         return job;

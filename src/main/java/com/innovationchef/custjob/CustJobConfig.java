@@ -1,5 +1,6 @@
 package com.innovationchef.custjob;
 
+import com.innovationchef.batchcommons.FilePathParamValidator;
 import com.innovationchef.batchcommons.ItemCountListener;
 import com.innovationchef.configuration.BatchJobRegistrar;
 import com.innovationchef.configuration.SpringBatchConfig;
@@ -44,6 +45,7 @@ public class CustJobConfig {
     public Job jobBuilder() throws DuplicateJobException {
         Job job = this.jobBuilder
                 .incrementer(new RunIdIncrementer())
+                .validator(new FilePathParamValidator())
                 .start(saveInputStep())
                 .build();
         this.jobRegistrar.registerJob(job);
