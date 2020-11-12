@@ -2,14 +2,14 @@ package com.innovationchef.controller;
 
 import com.innovationchef.constant.BatchConstant;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,7 +57,7 @@ public class JobController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @GetMapping("v1/api/pay/start/{jobId}/{fileId}")
     public Map<String, String> payJobStart(@PathVariable("jobId") String jobId,
-                                     @PathVariable("fileId") String fileId) throws Exception {
+                                           @PathVariable("fileId") String fileId) throws Exception {
         String completeFilePath = this.filepath + "payment-file-" + fileId + ".csv";
         final JobParameters parameters = new JobParametersBuilder()
                 .addString(BatchConstant.JOB_TYPE, BatchConstant.PAYMENT_JOB, true)
@@ -83,7 +83,7 @@ public class JobController {
                 response.put("status", "restarted");
             }
         } else {
-            this.jobLauncher.run(this.payJob, parameters);
+            this.runJob(this.payJob, parameters);
             response.put("status", "started");
         }
 
@@ -93,7 +93,7 @@ public class JobController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     @GetMapping("v1/api/cust/start/{jobId}/{fileId}")
     public Map<String, String> custJobStart(@PathVariable("jobId") String jobId,
-                                     @PathVariable("fileId") String fileId) throws Exception {
+                                            @PathVariable("fileId") String fileId) throws Exception {
         String completeFilePath = this.filepath + "customer-file-" + fileId + ".csv";
         final JobParameters parameters = new JobParametersBuilder()
                 .addString(BatchConstant.JOB_TYPE, BatchConstant.CUSTOMER_JOB, true)
@@ -119,10 +119,24 @@ public class JobController {
                 response.put("status", "restarted");
             }
         } else {
-            this.jobLauncher.run(this.custJob, parameters);
+            this.runJob(this.custJob, parameters);
             response.put("status", "started");
         }
 
         return response;
+    }
+
+    private void runJob(Job job, JobParameters parameters) {
+        try {
+            JobExecution jobExecution = this.jobLauncher.run(job, parameters);
+        } catch (JobExecutionAlreadyRunningException e) {
+            log.info("Job with fileName = {} is already running.", parameters.getParameters().get(BatchConstant.INPUT_FILE));
+        } catch (JobRestartException e) {
+            log.info("Job with fileName = {} was not restarted.", parameters.getParameters().get(BatchConstant.INPUT_FILE));
+        } catch (JobInstanceAlreadyCompleteException e) {
+            log.info("Job with fileName = {} already completed.", parameters.getParameters().get(BatchConstant.INPUT_FILE));
+        } catch (JobParametersInvalidException e) {
+            log.info("Invalid job parameters: {}", parameters.getParameters());
+        }
     }
 }
