@@ -8,7 +8,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,9 +45,6 @@ public class JobController {
     private JobLauncher jobLauncher;
 
     @Autowired
-    private JobRepository jobRepository;
-
-    @Autowired
     private JobOperator jobOperator;
 
     @Autowired
@@ -76,8 +72,9 @@ public class JobController {
         }
 
         this.jobsMap.put(this.payJob.getName(), parameters);
-        JobExecution lastExecution = this.jobRepository.getLastJobExecution(this.payJob.getName(), parameters);
-        if (lastExecution != null) {
+        JobInstance lastJobInstance = this.jobExplorer.getLastJobInstance(this.payJob.getName());
+        if (lastJobInstance != null) {
+            JobExecution lastExecution = this.jobExplorer.getLastJobExecution(lastJobInstance);
             if (lastExecution.getExitStatus().getExitCode().equals("STOPPED")) {
                 this.jobOperator.restart(lastExecution.getId());
                 response.put("status", "restarted");
@@ -91,7 +88,7 @@ public class JobController {
     }
 
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @GetMapping("v1/api/cust/start/{jobId}/{fileId}")
+        @GetMapping("v1/api/cust/start/{jobId}/{fileId}")
     public Map<String, String> custJobStart(@PathVariable("jobId") String jobId,
                                             @PathVariable("fileId") String fileId) throws Exception {
         String completeFilePath = this.filepath + "customer-file-" + fileId + ".csv";
@@ -112,8 +109,9 @@ public class JobController {
         }
 
         this.jobsMap.put(this.custJob.getName(), parameters);
-        JobExecution lastExecution = this.jobRepository.getLastJobExecution(this.custJob.getName(), parameters);
-        if (lastExecution != null) {
+        JobInstance lastJobInstance = this.jobExplorer.getLastJobInstance(this.payJob.getName());
+        if (lastJobInstance != null) {
+            JobExecution lastExecution = this.jobExplorer.getLastJobExecution(lastJobInstance);
             if (lastExecution.getExitStatus().getExitCode().equals("STOPPED")) {
                 this.jobOperator.restart(lastExecution.getId());
                 response.put("status", "restarted");

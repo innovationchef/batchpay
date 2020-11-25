@@ -3,11 +3,12 @@ package com.innovationchef.controller;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
-import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -21,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JobManager implements ApplicationListener<ContextClosedEvent> {
 
     @Autowired
-    private JobRepository jobRepository;
+    private JobExplorer jobExplorer;
 
     @Autowired
     private JobOperator jobOperator;
@@ -32,7 +33,7 @@ public class JobManager implements ApplicationListener<ContextClosedEvent> {
     @SneakyThrows
     @Override
     public void onApplicationEvent(ContextClosedEvent contextClosedEvent) {
-        for (Map.Entry<String, JobParameters> jobConfig : jobsMap.entrySet()) {
+        for (Map.Entry<String, JobParameters> jobConfig : this.jobsMap.entrySet()) {
             log.warn("Job {} is in context. Trying to close...", jobConfig.getKey());
             shutdownJob(jobConfig.getKey(), jobConfig.getValue());
         }
@@ -41,11 +42,13 @@ public class JobManager implements ApplicationListener<ContextClosedEvent> {
     private void shutdownJob(String jobName, JobParameters parameters)
             throws NoSuchJobExecutionException, JobExecutionNotRunningException, InterruptedException {
         if (!this.jobsMap.containsKey(jobName)) return;
-        JobExecution lastExecution = this.jobRepository.getLastJobExecution(jobName, parameters);
-        if (lastExecution == null || lastExecution.getExitStatus().getExitCode().equals("COMPLETED")) return;
+        JobInstance lastInstance = this.jobExplorer.getLastJobInstance(jobName);
+        if (lastInstance == null) return;
+        JobExecution lastExecution = this.jobExplorer.getLastJobExecution(lastInstance);
+        if (lastExecution.getExitStatus().getExitCode().equals("COMPLETED")) return;
         log.warn("Stopping job with Id : {}. Return value {}", lastExecution.getId(), this.jobOperator.stop(lastExecution.getId()));
-        while (!this.jobRepository.getLastJobExecution(jobName, parameters).getExitStatus().getExitCode().equals("STOPPED")) {
-            log.warn(this.jobRepository.getLastJobExecution(jobName, parameters).getExitStatus());
+        while (!this.jobExplorer.getLastJobExecution(lastInstance).getExitStatus().getExitCode().equals("STOPPED")) {
+            log.warn(this.jobExplorer.getLastJobExecution(lastInstance).getExitStatus());
             Thread.sleep(70L);
         }
     }
