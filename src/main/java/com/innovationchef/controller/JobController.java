@@ -78,11 +78,11 @@ public class JobController {
             if (lastExecution.getExitStatus().getExitCode().equals("STOPPED")) {
                 this.jobOperator.restart(lastExecution.getId());
                 response.put("status", "restarted");
+                return response;
             }
-        } else {
-            this.runJob(this.payJob, parameters);
-            response.put("status", "started");
         }
+        this.runJob(this.payJob, parameters);
+        response.put("status", "started");
 
         return response;
     }
@@ -115,11 +115,11 @@ public class JobController {
             if (lastExecution.getExitStatus().getExitCode().equals("STOPPED")) {
                 this.jobOperator.restart(lastExecution.getId());
                 response.put("status", "restarted");
+                return response;
             }
-        } else {
-            this.runJob(this.custJob, parameters);
-            response.put("status", "started");
         }
+        this.runJob(this.custJob, parameters);
+        response.put("status", "started");
 
         return response;
     }

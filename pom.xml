@@ -11,11 +11,11 @@
     </parent>
 
     <groupId>com.innovationchef</groupId>
-    <artifactId>batch-payment-processor</artifactId>
+    <artifactId>batchpay</artifactId>
     <version>0.0.1</version>
 
     <name>Payment processor for bulk requests</name>
-    <description>Spring Batch service to execute payments from file</description>
+    <description>Spring Batch service to execute various jobs</description>
     <packaging>jar</packaging>
 
     <properties>
