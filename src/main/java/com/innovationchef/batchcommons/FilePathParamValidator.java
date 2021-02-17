@@ -15,7 +15,7 @@ public class FilePathParamValidator implements JobParametersValidator {
     @Override
     public void validate(JobParameters jobParameters) throws JobParametersInvalidException {
         String fileName = jobParameters.getString(BatchConstant.INPUT_FILE);
-        if (StringUtils.isEmpty(fileName))
+        if (!StringUtils.hasText(fileName))
             throw new JobParametersInvalidException("filepath value cannot be null");
         try {
             Path file = Paths.get(fileName);

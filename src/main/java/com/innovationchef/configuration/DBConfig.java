@@ -5,11 +5,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -35,10 +33,6 @@ public class DBConfig {
     private String dialect;
     private String hbm2ddl;
     private int maxPoolSize;
-
-    @Lazy
-    @Autowired
-    private LocalSessionFactoryBean sessionFactoryBean;
 
     @Bean
     @Primary
