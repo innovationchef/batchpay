@@ -20,5 +20,6 @@ class Step1Reader extends FlatFileItemReader<Pain001CSV> {
         String filePath = parameters.getString(BatchConstant.INPUT_FILE);
         assert filePath != null;
         this.setResource(new FileSystemResource(filePath));
+        this.setSaveState(false);
     }
 }

@@ -14,13 +14,15 @@ public class ItemCountListener implements ChunkListener {
 
     @Override
     public void afterChunk(ChunkContext context) {
-        int count = context.getStepContext().getStepExecution().getReadCount();
-        log.info("Processed ItemCount: {}", count);
+        int readCount = context.getStepContext().getStepExecution().getReadCount();
+        int skipCount = context.getStepContext().getStepExecution().getSkipCount();
+        log.info("Processed/Skip ItemCount: {}/{}", readCount, skipCount);
     }
 
     @Override
     public void afterChunkError(ChunkContext context) {
-        int count = context.getStepContext().getStepExecution().getReadCount();
-        log.info("Process error in last chunk after processing {} items", count);
+        int readCount = context.getStepContext().getStepExecution().getReadCount();
+        int skipCount = context.getStepContext().getStepExecution().getSkipCount();
+        log.info("Process error in last chunk after processing {} and skipping {} items. Error recorded: {}", readCount, skipCount, context.getAttribute(ChunkListener.ROLLBACK_EXCEPTION_KEY));
     }
 }

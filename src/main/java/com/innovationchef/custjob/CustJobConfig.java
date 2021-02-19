@@ -15,22 +15,18 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 public class CustJobConfig {
 
     private SessionFactory sessionFactory;
-    private TaskExecutor taskExecutor;
     private JobRepository jobRepository;
     private PlatformTransactionManager txnMgr;
 
     public CustJobConfig(SessionFactory sessionFactory,
-                         TaskExecutor taskExecutor,
                          JobRepository jobRepository,
                          PlatformTransactionManager txnMgr) {
         this.sessionFactory = sessionFactory;
-        this.taskExecutor = taskExecutor;
         this.jobRepository = jobRepository;
         this.txnMgr = txnMgr;
     }

@@ -12,7 +12,6 @@ import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteExcep
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
@@ -20,7 +19,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Log4j2
-@Component
 public class JobManager implements ApplicationListener<ContextClosedEvent> {
 
     private final JobExplorer jobExplorer;
@@ -69,8 +67,10 @@ public class JobManager implements ApplicationListener<ContextClosedEvent> {
         JobInstance lastJobInstance = this.jobExplorer.getLastJobInstance(job.getName());
         JobExecution lastExecution = this.jobExplorer.getLastJobExecution(lastJobInstance);
         try {
+            assert lastExecution != null;
             long executionId = this.jobOperator.restart(lastExecution.getId());
             JobExecution newExecution = this.jobExplorer.getLastJobExecution(lastJobInstance);
+            assert newExecution != null;
             return Optional.of(newExecution);
         } catch (JobInstanceAlreadyCompleteException e) {
             log.error("Job: {} is already complete with execution if: {}", job.getName(), lastExecution.getId());

@@ -9,12 +9,12 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
-@Component
+@Configuration
 @EnableBatchProcessing
 public class SpringBatchConfig implements BatchConfigurer {
 
@@ -44,7 +44,7 @@ public class SpringBatchConfig implements BatchConfigurer {
         factoryBean.setDataSource(this.dataSource);
         factoryBean.setTransactionManager(this.transactionManager);
         factoryBean.setIsolationLevelForCreate("ISOLATION_READ_COMMITTED");
-        factoryBean.setTablePrefix("BATCHPAY_");
+        // factoryBean.setTablePrefix("BATCHPAY_");
         factoryBean.afterPropertiesSet();
         this.jobRepository = factoryBean.getObject();
         return this.jobRepository;

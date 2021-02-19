@@ -4,10 +4,11 @@ import com.innovationchef.batchcommons.FilePathParamValidator;
 import com.innovationchef.batchcommons.ItemCountListener;
 import com.innovationchef.constant.BatchConstant;
 import com.innovationchef.entity.Pain001CSV;
+import com.innovationchef.exception.RetryableApiException;
 import com.innovationchef.payjob.step1.Step1Processor;
 import com.innovationchef.payjob.step1.Step1SynchronizedReader;
 import com.innovationchef.payjob.step1.Step1Writer;
-import com.innovationchef.service.PaymentApiCall;
+import com.innovationchef.service.PaymentService;
 import org.hibernate.SessionFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -24,15 +25,15 @@ public class PayJobConfig {
     private SessionFactory sessionFactory;
     private TaskExecutor taskExecutor;
     private JobRepository jobRepository;
-    private PaymentApiCall paymentApiCall;
+    private PaymentService paymentService;
     private PlatformTransactionManager txnMgr;
 
-    public PayJobConfig(PaymentApiCall paymentApiCall,
+    public PayJobConfig(PaymentService paymentService,
                         TaskExecutor taskExecutor,
                         SessionFactory sessionFactory,
                         JobRepository jobRepository,
                         PlatformTransactionManager txnMgr) {
-        this.paymentApiCall = paymentApiCall;
+        this.paymentService = paymentService;
         this.sessionFactory = sessionFactory;
         this.taskExecutor = taskExecutor;
         this.jobRepository = jobRepository;
@@ -53,12 +54,14 @@ public class PayJobConfig {
                 .repository(this.jobRepository)
                 .transactionManager(this.txnMgr)
                 .<Pain001CSV, Pain001CSV>chunk(10)
+                .faultTolerant()
+                .skip(RetryableApiException.class)
+                .skipLimit(100)
                 .reader(new Step1SynchronizedReader())
-                .processor(new Step1Processor(this.paymentApiCall))
+                .processor(new Step1Processor(this.paymentService))
                 .writer(new Step1Writer(this.sessionFactory))
                 .listener(new ItemCountListener())
                 .taskExecutor(this.taskExecutor)
-                .throttleLimit(10)
                 .allowStartIfComplete(false)
                 .build();
     }

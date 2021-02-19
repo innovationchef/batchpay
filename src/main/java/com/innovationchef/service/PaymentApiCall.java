@@ -1,34 +1,31 @@
 package com.innovationchef.service;
 
 import com.innovationchef.constant.PaymentStatus;
-import com.innovationchef.exception.ApiException;
-import lombok.SneakyThrows;
+import com.innovationchef.props.PayApiConnProp;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Service;
-
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
+import org.springframework.http.ResponseEntity;
 
 @Log4j2
-@Service
-public class PaymentApiCall {
+public class PaymentApiCall implements PaymentService {
 
-    private static final int MIN = 1;
-    private static final int MAX = 50;
+    private final PayApiConnProp prop;
+    private final PayApiRestTemplate restTemplate;
+    private final PayApiRetryTemplate retryTemplate;
 
-    @SneakyThrows
-    @Retryable(value = ApiException.class)
-    public PaymentStatus pay() {
-        Random r = new Random();
-        TimeUnit.MILLISECONDS.sleep(r.nextInt(MAX - MIN + 1) + MIN);
-        if (r.nextInt(50) < 25) return PaymentStatus.ACTC;
-        throw new ApiException();
+    public PaymentApiCall(PayApiConnProp prop,
+                          PayApiRestTemplate restTemplate,
+                          PayApiRetryTemplate retryTemplate) {
+        this.prop = prop;
+        this.restTemplate = restTemplate;
+        this.retryTemplate = retryTemplate;
     }
 
-    @Recover
-    public PaymentStatus recoverPay(ApiException ex) {
-        return PaymentStatus.RJCT;
+    public PaymentStatus post() {
+        return this.retryTemplate.execute(arg -> this.callApi());
+    }
+
+    public PaymentStatus callApi() {
+        ResponseEntity<String> response = this.restTemplate.getForEntity("random-url", String.class);
+        return PaymentStatus.valueOf(response.getBody());
     }
 }
