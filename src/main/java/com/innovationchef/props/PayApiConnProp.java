@@ -44,6 +44,11 @@ public class PayApiConnProp {
     private final boolean isSSLEnabled;
 
     /**
+     * Are endpoints Authorisation enabled
+     */
+    private final boolean isAuthEnabled;
+
+    /**
      * Configurations for SSL/TLS
      */
     private final SSLProp ssl;
@@ -53,6 +58,11 @@ public class PayApiConnProp {
      */
     private final Retry retry;
 
+    /**
+     * Configurations for authorisation
+     */
+    private final Auth auth;
+
     public PayApiConnProp(@DefaultValue("30") int maxTotal,
                           @DefaultValue("30") int maxPerRoute,
                           @DefaultValue("30") int timeout,
@@ -60,8 +70,10 @@ public class PayApiConnProp {
                           @DefaultValue("30") int socketTimeout,
                           @DefaultValue("30") int keepAlive,
                           @DefaultValue("false") boolean isSSLEnabled,
+                          @DefaultValue("false") boolean isAuthEnabled,
                           SSLProp ssl,
-                          Retry retry) {
+                          Retry retry,
+                          Auth auth) {
         this.maxTotal = maxTotal;
         this.maxPerRoute = maxPerRoute;
         this.timeout = timeout;
@@ -69,8 +81,10 @@ public class PayApiConnProp {
         this.socketTimeout = socketTimeout;
         this.keepAlive = keepAlive;
         this.isSSLEnabled = isSSLEnabled;
+        this.isAuthEnabled = isAuthEnabled;
         this.ssl = ssl;
         this.retry = retry;
+        this.auth = auth;
     }
 
     public int getMaxTotal() {
@@ -101,12 +115,20 @@ public class PayApiConnProp {
         return isSSLEnabled;
     }
 
+    public boolean isAuthEnabled() {
+        return isAuthEnabled;
+    }
+
     public SSLProp getSsl() {
         return ssl;
     }
 
     public Retry getRetry() {
         return retry;
+    }
+
+    public Auth getAuth() {
+        return auth;
     }
 
     public static class Retry {
@@ -239,6 +261,43 @@ public class PayApiConnProp {
 
         public String getTruststorePass() {
             return truststorePass;
+        }
+    }
+
+    public static class Auth {
+
+        /**
+         * Auth type - basic, encoded
+         */
+        private final String authType;
+
+        /**
+         * username
+         */
+        private final String username;
+
+        /**
+         * password
+         */
+        private final String password;
+
+        @ConstructorBinding
+        public Auth(String authType, String username, String password) {
+            this.authType = authType;
+            this.username = username;
+            this.password = password;
+        }
+
+        public String getAuthType() {
+            return authType;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getPassword() {
+            return password;
         }
     }
 }
